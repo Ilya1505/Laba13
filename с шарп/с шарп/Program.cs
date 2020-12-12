@@ -9,6 +9,7 @@ namespace c_шарп
     class Program
     {
         static Exception ex;// исключение класса ex
+        delegate void Write(string msg);// делегат
         static void Main(string[] args)
         {
             Console.WriteLine("Инициализация:\n");
@@ -17,9 +18,11 @@ namespace c_шарп
             cars avto = new cars("no_name", "no_color", 2020, 1000, 10, 50, dvs, 5);// конструктор со всеми параметрами
             cars avto1 = new cars("no_name", "no_color", 2020, 10000, 20, 0, dvs1, 10);
             avto = (cars)avto1.Clone();// глубокое клонирование
+            Write message=Message;
             AddTov(avto);// вызов метода где использ абстракт класс
             Console.WriteLine("Машина:");
             Console.WriteLine(avto);
+            avto.zapravka(message);
             bool f;
             do
             {
@@ -41,7 +44,7 @@ namespace c_шарп
             Console.WriteLine("\nДанные после ввода:");
             Console.Write(avto);
             int probegAfterDrive = 0;
-            Zapravit(avto);// вызов метода где использ интерфейс
+            avto.zapravka(message);
             try { probegAfterDrive = avto.Drive(10); }
             catch (Exception ex)// обработка пользовательского исключения
             {
@@ -66,6 +69,8 @@ namespace c_шарп
             avto.Sell(4);// вызов метода производного класса
             Console.WriteLine("Самолет:");
             plane pl = new plane("no_name", "no_color", 2020, 1000, 10, 10000, 5, 0);// конструктор со всеми параметрами
+            pl.zapravka(message);
+            pl.zapravka(message);
             Console.WriteLine(pl);
             do
             {
@@ -86,19 +91,19 @@ namespace c_шарп
             } while (f);
             Console.WriteLine("\nДанные после ввода:");
             Console.Write(pl);
-            Zapravit(pl);
+            
             pl.Fly(1);
             Console.WriteLine("Налет (в часах) после полета: " + pl.HOURFLY);
             pl.Sell();
             Console.ReadLine();
         }
+        static void Message(string msg)// функция на которую указывает делегат
+        {
+            Console.WriteLine(msg);
+        }
         static void AddTov(avtoShop tk)// полиморфизм
         {
             tk.addTov();
-        }
-        static void Zapravit(AZS tk)
-        {
-            tk.zapravka();
         }
         class Sale<T> where T:technica// шаблон класса
         {
@@ -128,10 +133,6 @@ namespace c_шарп
             }
             return PriceWithSale;
             }
-        };
-        interface AZS// интерфейс
-        {
-            void zapravka();
         };
         abstract class avtoShop// абстрактный класс
         {
@@ -259,7 +260,7 @@ namespace c_шарп
                 return new engine(name, weight, power, probeg, resurs);
             }
         };
-        class technica : avtoShop, AZS
+        class technica : avtoShop
         {
             protected string name;// марка авто
             public string Name// свойство класса
@@ -382,17 +383,8 @@ namespace c_шарп
                 count++;
                 Console.WriteLine("Добавлена 1 новая техника");
             }
-            public void zapravka()
-            {
-                if (petrol == 0)
-                {
-                    petrol += 100;
-                    Console.WriteLine("Бак полностью заправлен");
-                }
-                else Console.WriteLine("100л залить нельзя, бак не пустой");
-            }
         };
-        class cars : technica, AZS, ICloneable
+        class cars : technica, ICloneable
         {
             private engine dvs;// двигатель
             public engine Dvs
@@ -462,14 +454,14 @@ namespace c_шарп
                 count += 3;
                 Console.WriteLine("Добавлено 3 новые машины");
             }
-            public void zapravka()
+            public void zapravka(Write message)
             {
                 if (petrol <= 90)
                 {
                     petrol += 10;
-                    Console.WriteLine("Залито 10л бензина");
+                    message("Залито 10л бензина");
                 }
-                else Console.WriteLine("10л залить нельзя, бак почти полный");
+                else message("10л залить нельзя, бак почти полный");
             }
             public object Clone()
             {
@@ -478,7 +470,7 @@ namespace c_шарп
                 return c;
             }
         };
-        class plane : technica, AZS
+        class plane : technica
         {
             private double MaxHeight;// максимальная высота полета (в метрах)
             public double MAXHEIGHT
@@ -533,14 +525,14 @@ namespace c_шарп
                 count += 2;
                 Console.WriteLine("Добавлено 2 новых самолета");
             }
-            public void zapravka()
+            public void zapravka(Write message)
             {
                 if (petrol <= 50)
                 {
                     petrol += 50;
-                    Console.WriteLine("Залито 50л бензина");
+                    message("Залито 50л бензина");
                 }
-                else Console.WriteLine("50л залить нельзя");
+                else message("50л залить нельзя");
             }
         };
     }
